@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="沉里">
+<meta name="theme-color" id="themeColor" content="#008069">
+<title>沉里</title>
+<style>
+:root{color-scheme:light;--scale:1;--accent:#008069;--hdr:#008069;--hdr-text:#fff;--mine:#d9fdd3;--mine-text:#111b21;--mine-meta:#667781;
+--bg-app:#f0f2f5;--chatbg:#efeae2;--in:#fff;--in-text:#111b21;--in-meta:#667781;--chip-bg:rgba(255,255,255,.92);--chip-text:#54656f;
+--input-bg:#fff;--field-bg:#fff;--text:#111b21;--card:#fff;--line:#eef0f1;--border:#d1d7db;--sub:#667781;--hint:#8696a0;--shadow:rgba(11,20,26,.13);--sheet-bg:#fff;--danger:#d93025}
+:root[data-theme=dark]{color-scheme:dark;--bg-app:#111b21;--chatbg:#0b141a;--in:#202c33;--in-text:#e9edef;--in-meta:rgba(233,237,239,.6);--chip-bg:#182229;--chip-text:#8696a0;
+--input-bg:#2a3942;--field-bg:#2a3942;--text:#e9edef;--card:#202c33;--line:#2a3942;--border:#3b4a54;--sub:#8696a0;--hint:#8696a0;--shadow:rgba(0,0,0,.3);--sheet-bg:#233138;--danger:#f15c6d}
+html{font-size:calc(16px * var(--scale))}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;color:var(--text);background:var(--bg-app);overflow:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+#app{position:fixed;left:0;right:0;top:0;height:100dvh;display:flex;flex-direction:column}
+header{flex-shrink:0;display:flex;align-items:center;gap:.5rem;background:var(--hdr);color:var(--hdr-text);padding:.25rem .25rem .25rem .625rem;padding-top:calc(.25rem + env(safe-area-inset-top))}
+.hinfo{flex:1;min-width:0;cursor:pointer}
+.hname{font-size:1.0625rem;font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hstatus{font-size:.78rem;opacity:.85;line-height:1.2}
+.ibtn{flex-shrink:0;width:2.5rem;height:2.5rem;border:none;background:none;color:inherit;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ibtn svg{width:1.375rem;height:1.375rem;fill:currentColor}
+.av{flex-shrink:0;border-radius:50%;background:#c4ccd1 center/cover no-repeat;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;overflow:hidden}
+header .av{width:2.25rem;height:2.25rem;font-size:1rem;cursor:pointer}
+#main{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--chatbg) center/cover no-repeat}
+#chat{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:.625rem 3% .375rem}
+.chip{width:fit-content;max-width:85%;margin:.625rem auto;padding:.3rem .75rem;border-radius:.5rem;background:var(--chip-bg);color:var(--chip-text);font-size:.78rem;text-align:center;box-shadow:0 1px .5px var(--shadow)}
+.chip.err{color:var(--danger);white-space:pre-wrap;word-break:break-all}
+.row{display:flex;align-items:flex-start;gap:.375rem;margin-top:.125rem}
+.row.first{margin-top:.625rem}
+.row.me{flex-direction:row-reverse}
+.row .av{width:2rem;height:2rem;font-size:.875rem}
+.row .av.ph{visibility:hidden}
+.bub{max-width:min(75%,35rem);background:var(--in);color:var(--in-text);border-radius:.5rem;padding:.375rem .5rem .44rem .56rem;font-size:1rem;line-height:1.42;white-space:pre-wrap;overflow-wrap:anywhere;box-shadow:0 1px .5px var(--shadow);cursor:pointer}
+.row.first:not(.me) .bub{border-top-left-radius:0}
+.row.first.me .bub{border-top-right-radius:0}
+.me .bub{background:var(--mine);color:var(--mine-text)}
+.meta{float:right;margin:.44rem -.125rem -.31rem .625rem;font-size:.69rem;color:var(--in-meta);white-space:nowrap}
+.me .meta{color:var(--mine-meta)}
+.tick{color:#53bdeb;margin-left:.2rem}
+.dots{display:inline-flex;gap:.25rem;padding:.25rem .125rem}
+.dots i{width:.44rem;height:.44rem;border-radius:50%;background:#8696a0;animation:b 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes b{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+footer{flex-shrink:0;display:flex;align-items:flex-end;gap:.375rem;padding:.375rem .5rem;padding-bottom:calc(.375rem + env(safe-area-inset-bottom))}
+.inbox{flex:1;background:var(--input-bg);border-radius:1.5rem;padding:.6875rem 1rem;box-shadow:0 1px .5px var(--shadow);display:flex}
+#input{flex:1;border:none;outline:none;resize:none;background:none;color:var(--text);font:inherit;font-size:max(16px,1rem);line-height:1.35;max-height:8.75rem;overflow-y:auto}
+#send{width:3rem;height:3rem;border:none;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+#send svg{width:1.375rem;height:1.375rem;fill:#fff}
+#settings{position:fixed;inset:0;background:var(--bg-app);display:none;flex-direction:column;z-index:10}
+#settings.open{display:flex}
+.sbody{flex:1;overflow-y:auto;padding:.25rem .75rem calc(2rem + env(safe-area-inset-bottom))}
+.card{background:var(--card);border-radius:.75rem;padding:.25rem .875rem;margin-bottom:.375rem}
+.ctitle{font-size:.8125rem;color:var(--accent);font-weight:600;margin:1rem .25rem .375rem}
+:root[data-theme=dark] .ctitle{color:#00a884}
+.field{padding:.625rem 0;border-bottom:1px solid var(--line)}
+.field:last-child{border-bottom:none}
+.field>label,.grow>label{display:block;font-size:.8125rem;color:var(--sub);margin-bottom:.375rem}
+.field input[type=text],.field input[type=password],.field input[type=number],.field select,.field textarea{width:100%;border:1px solid var(--border);border-radius:.5rem;padding:.56rem .625rem;font:inherit;font-size:max(16px,1rem);background:var(--field-bg);color:var(--text);outline:none}
+.field textarea{min-height:11rem;resize:vertical;line-height:1.4}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+.line{display:flex;align-items:center;gap:.75rem}
+.line .av{width:3.5rem;height:3.5rem;font-size:1.375rem;cursor:pointer}
+.grow{flex:1;min-width:0}
+.btns{display:flex;flex-wrap:wrap;gap:.5rem}
+.btn{border:1px solid var(--border);background:var(--card);border-radius:1.125rem;padding:.5rem .875rem;font:inherit;font-size:.875rem;color:var(--text);cursor:pointer;display:inline-flex;align-items:center;gap:.375rem}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{color:var(--danger)}
+.sw{display:flex;align-items:center;justify-content:space-between;gap:.75rem;font-size:.9375rem}
+.sw input[type=checkbox]{width:1.375rem;height:1.375rem;accent-color:var(--accent)}
+.sw select{width:auto!important;min-width:8rem}
+input[type=color]{width:2.5rem;height:1.75rem;border:none;background:none;padding:0}
+.range{display:flex;align-items:center;gap:.75rem}
+.range input{flex:1;accent-color:var(--accent)}
+.range span{min-width:3rem;text-align:right;font-size:.875rem;color:var(--sub)}
+.hint{font-size:.75rem;color:var(--hint);margin-top:.375rem;line-height:1.5}
+#mask{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;z-index:20}
+#mask.open{display:flex}
+#sheet{width:100%;max-width:30rem;padding:.5rem .5rem calc(.5rem + env(safe-area-inset-bottom))}
+#sheet .grp{background:var(--sheet-bg);border-radius:.875rem;overflow:hidden;margin-bottom:.5rem}
+#sheet button{display:block;width:100%;border:none;background:none;padding:1rem;font:inherit;font-size:1.0625rem;color:var(--text);border-bottom:1px solid var(--line);cursor:pointer}
+#sheet button:last-child{border-bottom:none}
+#sheet .danger{color:var(--danger)}
+#toast{position:fixed;left:50%;bottom:6rem;transform:translateX(-50%);background:rgba(0,0,0,.75);color:#fff;padding:.5rem 1rem;border-radius:1.125rem;font-size:.875rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="av" id="hAv"></div>
+    <div class="hinfo" id="hInfo"><div class="hname" id="hName"></div><div class="hstatus" id="hStatus">在线</div></div>
+    <button class="ibtn" id="openSet" aria-label="设置"><svg viewBox="0 0 24 24"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></button>
+  </header>
+  <div id="main">
+    <div id="chat"></div>
+    <footer>
+      <div class="inbox"><textarea id="input" rows="1" placeholder="消息"></textarea></div>
+      <button id="send" aria-label="发送"></button>
+    </footer>
+  </div>
+</div>
+
+<div id="settings">
+  <header>
+    <button class="ibtn" id="closeSet" aria-label="返回"><svg viewBox="0 0 24 24"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"/></svg></button>
+    <div class="hinfo"><div class="hname">设置</div></div>
+  </header>
+  <div class="sbody">
+    <div class="ctitle">连接</div>
+    <div class="card">
+      <div class="field"><label>接口格式</label><select id="s_format"><option value="openai">OpenAI 兼容（大部分中转站）</option><option value="anthropic">Anthropic 原生</option></select></div>
+      <div class="field"><label>Base URL</label><input type="text" id="s_baseUrl" placeholder="https://你的中转站地址" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+      <div class="field"><label>API Key</label><input type="password" id="s_apiKey" placeholder="sk-..." autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+      <div class="field"><label>模型名</label><input type="text" id="s_model" placeholder="和 kelivo 里填的一样" autocapitalize="off" autocorrect="off" spellcheck="false"><div class="hint">Base URL 填到域名或者 /v1 都行，后面的路径会自动补上。</div></div>
+    </div>
+    <div class="ctitle">他</div>
+    <div class="card"><div class="field line"><div class="av" id="botAvPrev"></div><div class="grow"><label>备注（点左边头像可以换）</label><input type="text" id="s_botName"></div></div></div>
+    <div class="ctitle">我</div>
+    <div class="card"><div class="field line"><div class="av" id="userAvPrev"></div><div class="grow"><label>我的名字（点左边头像可以换）</label><input type="text" id="s_userName"></div></div></div>
+    <div class="ctitle">外观</div>
+    <div class="card">
+      <div class="field sw">深色模式<select id="s_theme"><option value="system">跟随系统</option><option value="light">浅色</option><option value="dark">深色</option></select></div>
+      <div class="field"><label>界面大小</label><div class="range"><input type="range" id="s_scale" min="80" max="140" step="5"><span id="scaleVal"></span></div></div>
+      <div class="field"><label>聊天背景</label><div class="btns"><button class="btn" id="bgImgBtn">换图片</button><span class="btn">纯色<input type="color" id="s_bgColor"></span><button class="btn" id="bgReset">恢复默认</button></div></div>
+      <div class="field sw">主题色<input type="color" id="s_accent"></div>
+      <div class="field sw">我的气泡颜色（浅色）<input type="color" id="s_mine"></div>
+      <div class="field sw">我的气泡颜色（深色）<input type="color" id="s_mineDark"></div>
+      <div class="field sw">气泡旁显示头像<input type="checkbox" id="s_showAv"></div>
+      <div class="field sw">回复按空行拆成多个气泡<input type="checkbox" id="s_split"></div>
+    </div>
+    <div class="ctitle">设定</div>
+    <div class="card">
+      <div class="field"><label>系统提示词（人设和记忆先放这里）</label><textarea id="s_system"></textarea></div>
+      <div class="field"><label>每次带上最近多少条消息</label><input type="number" id="s_ctx" min="2" max="1000"></div>
+      <div class="field"><label>单次回复最大长度（tokens）</label><input type="number" id="s_maxTokens" min="256" max="64000"></div>
+    </div>
+    <div class="ctitle">数据</div>
+    <div class="card"><div class="field"><div class="btns"><button class="btn pri" id="exportBtn">导出备份</button><button class="btn" id="importBtn">导入备份</button><button class="btn danger" id="clearBtn">清空聊天记录</button></div><div class="hint">聊天记录和设置只存在这台设备的浏览器里。备份文件不含 API Key。</div></div></div>
+  </div>
+</div>
+
+<div id="mask"><div id="sheet"></div></div>
+<div id="toast"></div>
+<input type="file" id="fileImg" accept="image/*" hidden>
+<input type="file" id="fileJson" accept="application/json,.json" hidden>
+
+<script>
+const $=id=>document.getElementById(id);
+const ICON_SEND='<svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>';
+const ICON_STOP='<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+const LIGHT_BG='#efeae2',DARK_BG='#0b141a';
+const DEF={format:'openai',baseUrl:'',apiKey:'',model:'',botName:'沉里',userName:'秋秋',botAvatar:'',userAvatar:'',bg:'',bgColor:'',accent:'#008069',mine:'#d9fdd3',mineDark:'#005c4b',theme:'system',scale:100,showAv:true,split:true,system:'',ctx:40,maxTokens:4096};
+function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){toast('保存失败：存储空间可能满了');return false}}
+let S=Object.assign({},DEF,load('cl_set',{}));
+if(S.bgColor===LIGHT_BG)S.bgColor='';
+let msgs=load('cl_msgs',[]);
+let busy=false,ctrl=null,notes=[],sRows=[],sFirst=true;
+const saveS=()=>store('cl_set',S),saveM=()=>store('cl_msgs',msgs);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const pad=n=>String(n).padStart(2,'0');
+const hm=t=>{const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes())};
+function dayLabel(t){const d=new Date(t),n=new Date();const a=new Date(d.getFullYear(),d.getMonth(),d.getDate()),b=new Date(n.getFullYear(),n.getMonth(),n.getDate());const diff=Math.round((b-a)/864e5);if(diff===0)return'今天';if(diff===1)return'昨天';return(d.getFullYear()!==n.getFullYear()?d.getFullYear()+'年':'')+(d.getMonth()+1)+'月'+d.getDate()+'日'}
+function setAv(el,img,name){el.style.backgroundImage=img?`url("${img}")`:'';el.textContent=img?'':Array.from(name||'?')[0]}
+let tt;function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('show'),1600)}
+
+const mq=window.matchMedia('(prefers-color-scheme: dark)');
+const isDark=()=>S.theme==='dark'||(S.theme==='system'&&mq.matches);
+function lum(hex){const m=/^#?([0-9a-f]{6})$/i.exec(hex||'');if(!m)return 1;const n=parseInt(m[1],16);const c=[n>>16&255,n>>8&255,n&255].map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+function applyTheme(){
+  const dark=isDark(),root=document.documentElement,r=root.style;
+  root.dataset.theme=dark?'dark':'light';
+  r.setProperty('--scale',(+S.scale||100)/100);
+  r.setProperty('--accent',S.accent);
+  const mine=dark?S.mineDark:S.mine,ml=lum(mine)>.3;
+  r.setProperty('--mine',mine);r.setProperty('--mine-text',ml?'#111b21':'#e9edef');r.setProperty('--mine-meta',ml?'#667781':'rgba(233,237,239,.65)');
+  const hdr=dark?'#202c33':S.accent;
+  r.setProperty('--hdr',hdr);r.setProperty('--hdr-text',lum(hdr)>.3?'#111b21':'#fff');
+  $('themeColor').setAttribute('content',hdr);
+  $('main').style.backgroundColor=S.bgColor||'';$('main').style.backgroundImage=S.bg?`url("${S.bg}")`:'none';
+  setAv($('hAv'),S.botAvatar,S.botName);$('hName').textContent=S.botName||'沉里';document.title=S.botName||'沉里';
+}
+if(mq.addEventListener)mq.addEventListener('change',()=>{applyTheme();if($('settings').classList.contains('open'))fillSettings()});else if(mq.addListener)mq.addListener(applyTheme);
+
+const chat=$('chat');
+const nearBottom=()=>chat.scrollHeight-chat.scrollTop-chat.clientHeight<120;
+const toBottom=()=>{chat.scrollTop=chat.scrollHeight};
+function mkRow(role,first){
+  const row=document.createElement('div');row.className='row'+(role==='user'?' me':'')+(first?' first':'');
+  if(S.showAv){const a=document.createElement('div');a.className='av'+(first?'':' ph');if(first){role==='user'?setAv(a,S.userAvatar,S.userName):setAv(a,S.botAvatar,S.botName)}row.appendChild(a)}
+  const b=document.createElement('div');b.className='bub';row.appendChild(b);
+  return{row,b};
+}
+function render(){
+  chat.innerHTML='';
+  const tip=document.createElement('div');tip.className='chip';tip.textContent='🔒 消息只存在这台设备上';chat.appendChild(tip);
+  let day='',prev=null;
+  msgs.forEach(m=>{
+    const d=dayLabel(m.t);
+    if(d!==day){const c=document.createElement('div');c.className='chip';c.textContent=d;chat.appendChild(c);day=d;prev=null}
+    const{row,b}=mkRow(m.role,!prev||prev.role!==m.role);
+    b.appendChild(document.createTextNode(m.content));
+    const meta=document.createElement('span');meta.className='meta';meta.textContent=hm(m.t);
+    if(m.role==='user'){const k=document.createElement('span');k.className='tick';k.textContent='✓✓';meta.appendChild(k)}
+    b.appendChild(meta);b.onclick=()=>actions(m.id);
+    chat.appendChild(row);prev=m;
+  });
+  notes.forEach(n=>{const c=document.createElement('div');c.className='chip err';c.textContent=n;chat.appendChild(c)});
+  toBottom();
+}
+const splitParts=t=>S.split?t.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean):(t.trim()?[t.trim()]:[]);
+function addSRow(){const r=mkRow('assistant',!sRows.length&&sFirst);r.b.style.cursor='default';chat.appendChild(r.row);sRows.push(r);return r}
+function startStream(){
+  const last=msgs[msgs.length-1];sFirst=!last||last.role!=='assistant';sRows=[];
+  addSRow().b.innerHTML='<span class="dots"><i></i><i></i><i></i></span>';toBottom();
+}
+function updStream(t){
+  if(!sRows.length)return;
+  const parts=splitParts(t);if(!parts.length)return;
+  const nb=nearBottom();
+  while(sRows.length<parts.length)addSRow();
+  parts.forEach((p,i)=>{if(sRows[i].b.textContent!==p)sRows[i].b.textContent=p});
+  if(nb)toBottom();
+}
+function updUI(){$('hStatus').textContent=busy?'正在输入…':'在线';$('send').innerHTML=busy?ICON_STOP:ICON_SEND}
+
+function endpoint(){
+  let b=S.baseUrl.trim().replace(/\/+$/,'');
+  if(/\/(chat\/completions|messages)$/.test(b))return b;
+  if(!/\/v\d+$/.test(b))b+='/v1';
+  return b+(S.format==='anthropic'?'/messages':'/chat/completions');
+}
+function ctxMsgs(){
+  const out=[];
+  msgs.slice(-(+S.ctx||40)).forEach(m=>{const l=out[out.length-1];if(l&&l.role===m.role)l.content+='\n\n'+m.content;else out.push({role:m.role,content:m.content})});
+  while(out.length&&out[0].role!=='user')out.shift();
+  return out;
+}
+function sysPrompt(){const n=new Date();const t=`${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())} ${hm(n)} 星期${'日一二三四五六'[n.getDay()]}`;return(S.system.trim()?S.system.trim()+'\n\n':'')+'当前时间：'+t}
+function buildReq(){
+  const messages=ctxMsgs(),sys=sysPrompt(),max=+S.maxTokens||4096,model=S.model.trim(),key=S.apiKey.trim();
+  if(S.format==='anthropic')return{url:endpoint(),headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:{model,system:sys,messages,max_tokens:max,stream:true}};
+  return{url:endpoint(),headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:{model,messages:[{role:'system',content:sys},...messages],max_tokens:max,stream:true}};
+}
+function pieceOf(j){
+  if(j.error)throw new Error(typeof j.error==='string'?j.error:(j.error.message||JSON.stringify(j.error)));
+  if(j.choices&&j.choices[0]){const c=j.choices[0];return(c.delta&&c.delta.content)||(c.message&&c.message.content)||''}
+  if(j.type==='content_block_delta'&&j.delta&&j.delta.type==='text_delta')return j.delta.text||'';
+  if(Array.isArray(j.content))return j.content.map(x=>x.type==='text'?x.text:'').join('');
+  return'';
+}
+async function reply(){
+  if(!S.baseUrl.trim()||!S.apiKey.trim()||!S.model.trim()){notes=['先去设置里填好 Base URL、API Key 和模型名'];render();openSettings();return}
+  if(!ctxMsgs().length)return;
+  notes=[];render();busy=true;updUI();startStream();
+  ctrl=new AbortController();let full='',err='';
+  try{
+    const{url,headers,body}=buildReq();
+    const res=await fetch(url,{method:'POST',headers,body:JSON.stringify(body),signal:ctrl.signal});
+    if(!res.ok){let t=await res.text();try{const j=JSON.parse(t);if(j.error)t=j.error.message||JSON.stringify(j.error)}catch(e){}throw new Error(`HTTP ${res.status}：${String(t).slice(0,300)}`)}
+    const ct=res.headers.get('content-type')||'';
+    if(!res.body||ct.includes('application/json')){full=pieceOf(await res.json());updStream(full)}
+    else{
+      const rd=res.body.getReader(),dec=new TextDecoder();let buf='';
+      for(;;){
+        const{done,value}=await rd.read();if(done)break;
+        buf+=dec.decode(value,{stream:true});const lines=buf.split('\n');buf=lines.pop();
+        for(const ln of lines){const s=ln.trim();if(!s.startsWith('data:'))continue;const d=s.slice(5).trim();if(!d||d==='[DONE]')continue;let j;try{j=JSON.parse(d)}catch(e){continue}const p=pieceOf(j);if(p){full+=p;updStream(full)}}
+      }
+    }
+  }catch(e){
+    if(e.name!=='AbortError')err=e instanceof TypeError?'连不上接口。先检查 Base URL；地址没错的话，可能是中转站不允许网页直接访问（跨域）。':(e.message||String(e));
+  }
+  busy=false;ctrl=null;sRows=[];
+  const parts=splitParts(full);
+  if(parts.length){const t=Date.now();parts.forEach((p,i)=>msgs.push({id:uid(),role:'assistant',content:p,t:t+i}));saveM()}
+  if(err)notes=[err+'\n（直接点发送可以重试）'];
+  render();updUI();
+}
+
+const input=$('input');
+function grow(){input.style.height='auto';const max=8.75*parseFloat(getComputedStyle(document.documentElement).fontSize);input.style.height=Math.min(input.scrollHeight,max)+'px'}
+function send(){
+  if(busy){ctrl&&ctrl.abort();return}
+  const t=input.value.trim();
+  if(!t){if(msgs.length&&msgs[msgs.length-1].role==='user')reply();return}
+  msgs.push({id:uid(),role:'user',content:t,t:Date.now()});saveM();
+  input.value='';grow();notes=[];render();reply();
+}
+input.addEventListener('input',grow);
+input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&e.keyCode!==229){e.preventDefault();send()}});
+$('send').onclick=send;
+
+function sheet(items){
+  const s=$('sheet');s.innerHTML='';
+  const g=document.createElement('div');g.className='grp';
+  items.forEach(([label,fn,cls])=>{const b=document.createElement('button');b.textContent=label;if(cls)b.className=cls;b.onclick=()=>{closeSheet();fn()};g.appendChild(b)});
+  const g2=document.createElement('div');g2.className='grp';const c=document.createElement('button');c.textContent='取消';c.style.fontWeight='600';c.onclick=closeSheet;g2.appendChild(c);
+  s.append(g,g2);$('mask').classList.add('open');
+}
+function closeSheet(){$('mask').classList.remove('open')}
+$('mask').onclick=e=>{if(e.target.id==='mask')closeSheet()};
+function actions(id){
+  if(String(window.getSelection()).length)return;
+  const i=msgs.findIndex(m=>m.id===id);if(i<0)return;const m=msgs[i];
+  const items=[['复制',()=>copy(m.content)]];
+  if(!busy&&m.role==='assistant'&&msgs.slice(i).every(x=>x.role==='assistant'))items.push(['重新回复',regen]);
+  items.push(['删除',()=>{if(confirm('删除这条消息？')){const k=msgs.findIndex(x=>x.id===id);if(k>=0){msgs.splice(k,1);saveM();render()}}},'danger']);
+  sheet(items);
+}
+function regen(){while(msgs.length&&msgs[msgs.length-1].role==='assistant')msgs.pop();saveM();notes=[];render();reply()}
+function copy(t){
+  const fb=()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('复制失败')}a.remove()};
+  if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast('已复制'),fb);else fb();
+}
+
+const binds=['format','baseUrl','apiKey','model','botName','userName','system','ctx','maxTokens'];
+function fillSettings(){
+  binds.forEach(k=>{$('s_'+k).value=S[k]});
+  $('s_theme').value=S.theme;$('s_scale').value=S.scale;$('scaleVal').textContent=S.scale+'%';
+  $('s_bgColor').value=S.bgColor||(isDark()?DARK_BG:LIGHT_BG);$('s_accent').value=S.accent;$('s_mine').value=S.mine;$('s_mineDark').value=S.mineDark;
+  $('s_showAv').checked=S.showAv;$('s_split').checked=S.split;
+  setAv($('botAvPrev'),S.botAvatar,S.botName);setAv($('userAvPrev'),S.userAvatar,S.userName);
+}
+function openSettings(){fillSettings();$('settings').classList.add('open')}
+function closeSettings(){$('settings').classList.remove('open');applyTheme();render();grow()}
+binds.forEach(k=>{const el=$('s_'+k);const h=()=>{S[k]=(k==='ctx'||k==='maxTokens')?(parseInt(el.value)||DEF[k]):el.value;saveS();if(k==='botName')setAv($('botAvPrev'),S.botAvatar,S.botName);if(k==='userName')setAv($('userAvPrev'),S.userAvatar,S.userName)};el.addEventListener('input',h);el.addEventListener('change',h)});
+$('s_theme').addEventListener('change',e=>{S.theme=e.target.value;saveS();applyTheme();fillSettings()});
+$('s_scale').addEventListener('input',e=>{S.scale=+e.target.value;$('scaleVal').textContent=S.scale+'%';applyTheme()});
+$('s_scale').addEventListener('change',saveS);
+$('s_bgColor').addEventListener('input',e=>{S.bgColor=e.target.value;S.bg='';saveS();applyTheme()});
+$('s_accent').addEventListener('input',e=>{S.accent=e.target.value;saveS();applyTheme()});
+$('s_mine').addEventListener('input',e=>{S.mine=e.target.value;saveS();applyTheme()});
+$('s_mineDark').addEventListener('input',e=>{S.mineDark=e.target.value;saveS();applyTheme()});
+$('s_showAv').addEventListener('change',e=>{S.showAv=e.target.checked;saveS()});
+$('s_split').addEventListener('change',e=>{S.split=e.target.checked;saveS()});
+$('openSet').onclick=openSettings;$('hInfo').onclick=openSettings;$('hAv').onclick=openSettings;$('closeSet').onclick=closeSettings;
+
+let imgTarget='';
+$('botAvPrev').onclick=()=>{imgTarget='botAvatar';$('fileImg').click()};
+$('userAvPrev').onclick=()=>{imgTarget='userAvatar';$('fileImg').click()};
+$('bgImgBtn').onclick=()=>{imgTarget='bg';$('fileImg').click()};
+$('bgReset').onclick=()=>{S.bg='';S.bgColor='';saveS();applyTheme();fillSettings();toast('已恢复默认背景')};
+function shrink(file,max,q,square){return new Promise((res,rej)=>{const r=new FileReader();r.onerror=rej;r.onload=()=>{const im=new Image();im.onerror=rej;im.onload=()=>{
+  const w=im.naturalWidth,h=im.naturalHeight,c=document.createElement('canvas'),x=c.getContext('2d');
+  if(square){const s=Math.min(w,h);c.width=c.height=Math.min(s,max);x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,(w-s)/2,(h-s)/2,s,s,0,0,c.width,c.height)}
+  else{const k=Math.min(1,max/Math.max(w,h));c.width=Math.round(w*k);c.height=Math.round(h*k);x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height)}
+  res(c.toDataURL('image/jpeg',q))};im.src=r.result};r.readAsDataURL(file)})}
+$('fileImg').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  const isBg=imgTarget==='bg';
+  try{const url=await shrink(f,isBg?1600:320,isBg?.82:.88,!isBg);const old=S[imgTarget];S[imgTarget]=url;if(!saveS()){S[imgTarget]=old;return}applyTheme();fillSettings();toast(isBg?'背景换好了':'头像换好了')}
+  catch(err){toast('图片读取失败')}
+};
+
+$('exportBtn').onclick=()=>{
+  const s=Object.assign({},S);delete s.apiKey;
+  const blob=new Blob([JSON.stringify({app:'chenli',v:1,settings:s,msgs})],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);const d=new Date();
+  a.download=`沉里备份-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+};
+$('importBtn').onclick=()=>$('fileJson').click();
+$('fileJson').onchange=e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!Array.isArray(j.msgs))throw 0;
+    if(!confirm(`要导入 ${j.msgs.length} 条消息，会覆盖现在的记录和设置（API Key 保留）。继续吗？`))return;
+    const key=S.apiKey;S=Object.assign({},DEF,j.settings||{},{apiKey:key});if(S.bgColor===LIGHT_BG)S.bgColor='';msgs=j.msgs;saveS();saveM();applyTheme();fillSettings();toast('导入完成')}
+    catch(err){toast('这不是有效的备份文件')}};r.readAsText(f);
+};
+$('clearBtn').onclick=()=>{if(confirm('清空全部聊天记录？删了就找不回来，建议先导出备份。')){msgs=[];saveM();notes=[];render();toast('已清空')}};
+
+const app=$('app');
+if(window.visualViewport){const vv=window.visualViewport;const fit=()=>{app.style.height=vv.height+'px';app.style.top=vv.offsetTop+'px'};vv.addEventListener('resize',()=>{const nb=nearBottom();fit();if(nb)toBottom()});vv.addEventListener('scroll',fit);fit()}
+
+applyTheme();render();updUI();grow();
+</script>
+</body>
+</html>
